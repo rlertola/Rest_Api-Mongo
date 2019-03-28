@@ -5,7 +5,8 @@ const express = require('express');
 const morgan = require('morgan');
 
 // variable to enable global error logging
-const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
+const enableGlobalErrorLogging =
+  process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
 // create the Express app
 const app = express();
@@ -14,18 +15,36 @@ const app = express();
 app.use(morgan('dev'));
 
 // TODO setup your api routes here
+const routes = require('./routes');
+
+const mongoose = require('mongoose');
+
+// Connect to mongodb server.
+mongoose.connect('mongodb://localhost:27017/qa');
+
+const db = mongoose.connection;
+
+db.on('error', err => {
+  console.error('connection error:', err);
+});
+
+db.once('open', () => {
+  console.log('db connection successful');
+});
+
+app.use('/', routes);
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to the REST API project!',
+    message: 'Welcome to the REST API project!'
   });
 });
 
 // send 404 if no other route matched
 app.use((req, res) => {
   res.status(404).json({
-    message: 'Route Not Found',
+    message: 'Route Not Found'
   });
 });
 
@@ -37,7 +56,7 @@ app.use((err, req, res, next) => {
 
   res.status(err.status || 500).json({
     message: err.message,
-    error: {},
+    error: {}
   });
 });
 
