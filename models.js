@@ -12,7 +12,10 @@ const UserSchema = new Schema({
 });
 
 const CourseSchema = new Schema({
-  user: [UserSchema],
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   title: String,
   description: String,
   estimatedTime: String,
@@ -20,5 +23,9 @@ const CourseSchema = new Schema({
 });
 
 const Course = mongoose.model('Course', CourseSchema);
+const User = mongoose.model('User', UserSchema);
 
-module.exports.Course = Course;
+module.exports = {
+  Course,
+  User
+};
