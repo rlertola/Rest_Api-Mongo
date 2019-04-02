@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const { check, validationResult } = require('express-validator/check');
 const router = express.Router();
 
 // bcrypt
@@ -48,13 +49,29 @@ const authenticateUser = async (req, res, next) => {
   }
 };
 
+// Preloads course doc for matching routes.
+router.param('courseID', (req, res, next, id) => {
+  Course.findById(id, (err, doc) => {
+    if (err) return next(err);
+    if (!doc) {
+      err = new Error('Not Found');
+      err.status = 404;
+      return next(err);
+    }
+    req.course = doc;
+    return next();
+  });
+});
+
 // USER ROUTES
 
-// router.get('/usersAll', (req, res) => {
-//   User.find({}).exec((err, users) => {
-//     res.json(users);
-//   });
-// });
+// **Temporary, delete when done**
+router.get('/usersAll', (req, res) => {
+  User.find({}).exec((err, users) => {
+    res.json(users);
+  });
+});
+
 // GET currently authenticated user.
 router.get('/users', authenticateUser, (req, res, next) => {
   const user = req.currentUser;
@@ -86,21 +103,37 @@ router.get('/courses', (req, res, next) => {
 });
 
 // GET the course for the provided user id.
-router.get('/courses/:id', (req, res, next) => {
-  const id = req.params.id;
-  Course.findById(id, (err, course) => {
+router.get('/courses/:courseID', (req, res, next) => {
+  res.json(req.course);
+});
+
+// POST create a course, set Location header to the URI for the course, and return no content.
+router.post('/courses', (req, res, next) => {
+  const course = new Course(req.body);
+  course.save((err, course) => {
     if (err) return next(err);
+    res.location(`/courses/${course.id}`);
+    res.status(201);
     res.json(course);
   });
 });
 
-// POST create a course, set Location header to the URI for the course, and return no content.
-router.post('/', (req, res, next) => {});
-
 // PUT update a course and return no content.
-router.put('/', (req, res, next) => {});
+router.put('/courses/:courseID', (req, res, next) => {
+  req.course.update(req.body, (err, result) => {
+    if (err) return next(err);
+    res.json(result);
+  });
+});
 
 // DELETE course and return no content.
-router.delete('/', (req, res, next) => {});
+router.delete('/courses/:courseID', (req, res, next) => {
+  req.course.remove(err => {
+    if (err) return next(err);
+    res.location('/courses');
+    res.status(204);
+    res.json(Course);
+  });
+});
 
 module.exports = router;

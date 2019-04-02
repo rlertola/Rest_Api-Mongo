@@ -5,14 +5,14 @@ const express = require('express');
 const app = express();
 
 const morgan = require('morgan');
-const bodyParser = require('body-parser');
+const jsonParser = require('body-parser').json;
 
 // variable to enable global error logging
 const enableGlobalErrorLogging =
   process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
 // Body parser.
-app.use(bodyParser('body-parser'));
+app.use(jsonParser());
 
 // Morgan(req logging);
 app.use(morgan('dev'));
