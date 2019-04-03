@@ -32,6 +32,7 @@ const authenticateUser = async (req, res, next) => {
         );
         req.currentUser = user;
       } else {
+        res.sendStatus(401);
         message = `Authentication failure for username: ${user.emailAddress}`;
       }
     } else {
@@ -65,12 +66,14 @@ router.param('courseID', (req, res, next, id) => {
 
 // USER ROUTES
 
+// ------------------------------------------
 // **Temporary, delete when done**
 router.get('/usersAll', (req, res) => {
   User.find({}).exec((err, users) => {
     res.json(users);
   });
 });
+// ------------------------------------------
 
 // GET currently authenticated user.
 router.get('/users', authenticateUser, (req, res, next) => {
@@ -84,6 +87,7 @@ router.get('/users', authenticateUser, (req, res, next) => {
 // POST create user, sets Location header to '/' and returns no content.
 router.post('/users', (req, res, next) => {
   const user = new User(req.body);
+  user.password = bcryptjs.hashSync(user.password);
   user.save((err, user) => {
     if (err) return next(err);
     res.location('/');
@@ -91,6 +95,17 @@ router.post('/users', (req, res, next) => {
     res.json(user);
   });
 });
+
+// ------------------------------------------
+// ***Temporary - delete when done***
+router.delete('/users/delete/:id', (req, res, next) => {
+  const id = req.params.id;
+  User.findOneAndDelete({ _id: id }, (err, user) => {
+    if (err) return next(err);
+  });
+  res.json(User);
+});
+// ------------------------------------------
 
 // COURSE ROUTES
 
@@ -108,7 +123,7 @@ router.get('/courses/:courseID', (req, res, next) => {
 });
 
 // POST create a course, set Location header to the URI for the course, and return no content.
-router.post('/courses', (req, res, next) => {
+router.post('/courses', authenticateUser, (req, res, next) => {
   const course = new Course(req.body);
   course.save((err, course) => {
     if (err) return next(err);
@@ -119,7 +134,7 @@ router.post('/courses', (req, res, next) => {
 });
 
 // PUT update a course and return no content.
-router.put('/courses/:courseID', (req, res, next) => {
+router.put('/courses/:courseID', authenticateUser, (req, res, next) => {
   req.course.update(req.body, (err, result) => {
     if (err) return next(err);
     res.json(result);
@@ -127,7 +142,7 @@ router.put('/courses/:courseID', (req, res, next) => {
 });
 
 // DELETE course and return no content.
-router.delete('/courses/:courseID', (req, res, next) => {
+router.delete('/courses/:courseID', authenticateUser, (req, res, next) => {
   req.course.remove(err => {
     if (err) return next(err);
     res.location('/courses');

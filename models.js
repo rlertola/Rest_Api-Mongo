@@ -1,14 +1,36 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const Schema = mongoose.Schema;
 
+const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 const UserSchema = new Schema({
-  firstName: String,
-  lastName: String,
-  emailAddress: String,
-  password: String
+  firstName: {
+    type: String,
+    required: [true, 'Please enter a first name']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Please enter a last name']
+  },
+  emailAddress: {
+    type: String,
+    validate: {
+      validator: v => {
+        return emailRegex.test(v);
+      },
+      message: props => `${props.value} is not a valid email address`
+    },
+    required: [true, 'Please enter an email address'],
+    unique: 'already exists'
+  },
+  password: {
+    type: String,
+    required: [true, 'Please enter a password']
+  }
 });
 
 const CourseSchema = new Schema({
@@ -16,8 +38,14 @@ const CourseSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  title: String,
-  description: String,
+  title: {
+    type: String,
+    required: [true, 'Please enter a title']
+  },
+  description: {
+    type: String,
+    required: [true, 'Please enter a description']
+  },
   estimatedTime: String,
   materialsNeeded: String
 });
