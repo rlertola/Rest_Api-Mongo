@@ -16,6 +16,7 @@
       },
       "firstName": "Sally",
       "lastName": "Jones",
+
       "emailAddress": "sally@jones.com",
       "password": "sallypassword",
       "__v": 0

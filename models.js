@@ -25,7 +25,7 @@ const UserSchema = new Schema({
       message: props => `${props.value} is not a valid email address`
     },
     required: [true, 'Please enter an email address'],
-    unique: 'already exists'
+    unique: [true, 'Already exists']
   },
   password: {
     type: String,

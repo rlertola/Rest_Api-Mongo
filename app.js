@@ -22,8 +22,11 @@ const routes = require('./routes');
 
 const mongoose = require('mongoose');
 
-// Connect to mongodb server.
-mongoose.connect('mongodb://localhost:27017/fsjstd-restapi');
+// Connect to mongodb server. The settings are to fix deprecation warnings.
+mongoose.connect('mongodb://localhost:27017/fsjstd-restapi', {
+  useNewUrlParser: true,
+  useCreateIndex: true
+});
 
 const db = mongoose.connection;
 
