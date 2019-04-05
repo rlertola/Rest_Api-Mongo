@@ -69,7 +69,7 @@ _\*Middleware located under the UserSchema will check to make sure duplicate ema
 
 #### Permissions and Password Hashing
 
-A current user must be logged in with correct credentials to access records. Passwords are hashed using bcrypt. An authenticateUser middleware function is used in:
+A current user must be logged in with correct credentials to access records. Only the registered user can update a course. Passwords are hashed using bcrypt. An authenticateUser middleware function is used in:
 
 - GET /api/users
 - POST /api/courses
