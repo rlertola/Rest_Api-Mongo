@@ -1,18 +1,12 @@
+# TREEHOUSE TECHDEGREE PROJECT 9 - REST API Mongo
 
-# Full Stack JavaScript Techdegree v2 - REST API Project
+This project was built using Express, Mongo DB and Mongoose.
 
-## Overview of the Provided Project Files
+The API will provide a way for users to administer a school database containing information about courses: users can interact with the database by retrieving a list of courses, as well as adding, updating and deleting courses in the database.
 
-We've supplied the following files for you to use: 
+In addition, the project will require users to create an account and log-in to make changes to the database.
 
-* The `seed` folder contains a starting set of data for your database in the form of a JSON file (`data.json`) and a collection of files (`context.js`, `database.js`, and `index.js`) that can be used to create your app's database and populate it with data (we'll explain how to do that below).
-* We've included a `.gitignore` file to ensure that the `node_modules` folder doesn't get pushed to your GitHub repo.
-* The `app.js` file configures Express to serve a simple REST API. We've also configured the `morgan` npm package to log HTTP requests/responses to the console. You'll update this file with the routes for the API. You'll update this file with the routes for the API.
-* The `nodemon.js` file configures the nodemon Node.js module, which we are using to run your REST API.
-* The `package.json` file (and the associated `package-lock.json` file) contain the project's npm configuration, which includes the project's dependencies.
-* The `RESTAPI.postman_collection.json` file is a collection of Postman requests that you can use to test and explore your REST API.
-
-## Getting Started
+#### Getting Started
 
 To get up and running with this project, run the following commands from the root of the folder that contains this README file.
 
@@ -24,11 +18,6 @@ npm install
 ```
 
 Second, ensure that you have MongoDB installed globally on your system.
-
-* Open a `Command Prompt` (on Windows) or `Terminal` (on Mac OS X) instance and run the command `mongod` (or `sudo mongod`) to start the MongoDB daemon.
-* If that command failed then you’ll need to install MongoDB.
-* [How to Install MongoDB on Windows](http://treehouse.github.io/installation-guides/windows/mongo-windows.html)
-* [How to Install MongoDB on a Mac](http://treehouse.github.io/installation-guides/mac/mongo-mac.html)
 
 Third, seed your MongoDB database with data.
 
@@ -42,4 +31,47 @@ And lastly, start the application.
 npm start
 ```
 
-To test the Express server, browse to the URL [http://localhost:5000/](http://localhost:5000/).
+#### Schema and Models and Validation
+
+Required fields will display an error if empty.
+
+**User**
+
+- First (required)
+- Last Name (required)
+- Email\* (required and checked using regex)
+- Password (required)
+
+_\*Middleware located under the UserSchema will check to make sure duplicate email is not added and will throw an error if so._
+
+**Course**
+
+- User
+- Title (required)
+- Description (required)
+- Estimated Time
+- Materials Needed
+
+#### Routes
+
+**User**
+
+- GET /api/users 200 - gets all users.
+- POST /api/users 201 - create new user.
+
+**Course**
+
+- GET /api/courses 200 - gets list of courses.
+- GET /api/courses/:id 200 - gets single course.
+- POST /api/courses 201 - creates new course.
+- PUT /api/courses/:id 204 - edit and update course.
+- DELETE /api/courses/:id 204 - delete single course.
+
+#### Permissions and Password Hashing
+
+A current user must be logged in with correct credentials to access records. Passwords are hashed using bcrypt. An authenticateUser middleware function is used in:
+
+- GET /api/users
+- POST /api/courses
+- PUT /api/courses/:id
+- DELETE /api/courses/:id

@@ -1,7 +1,6 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
 
 const Schema = mongoose.Schema;
 
@@ -24,12 +23,20 @@ const UserSchema = new Schema({
       },
       message: props => `${props.value} is not a valid email address`
     },
-    required: [true, 'Please enter an email address'],
-    unique: [true, 'Already exists']
+    required: [true, 'Please enter an email address']
   },
   password: {
     type: String,
     required: [true, 'Please enter a password']
+  }
+});
+
+// This middleware stops duplicate emails from being saved.
+UserSchema.post('save', (err, doc, next) => {
+  if (err.name === 'MongoError' && err.code === 11000) {
+    next(new Error('Sorry, that email already exists'));
+  } else {
+    next();
   }
 });
 

@@ -1,7 +1,6 @@
 'use strict';
 
 const express = require('express');
-const { check, validationResult } = require('express-validator/check');
 const router = express.Router();
 
 // bcrypt
@@ -66,15 +65,6 @@ router.param('courseID', (req, res, next, id) => {
 
 // USER ROUTES
 
-// ------------------------------------------
-// **Temporary, delete when done**
-router.get('/usersAll', (req, res) => {
-  User.find({}).exec((err, users) => {
-    res.json(users);
-  });
-});
-// ------------------------------------------
-
 // GET currently authenticated user.
 router.get('/users', authenticateUser, (req, res, next) => {
   const user = req.currentUser;
@@ -97,7 +87,15 @@ router.post('/users', (req, res, next) => {
 });
 
 // ------------------------------------------
-// ***Temporary - delete when done***
+// *** THESE TWO ROUTES NOT REQUIRED BY PROJECT - FOR TESTING ONLY ***
+// GET all users.
+router.get('/usersAll', (req, res) => {
+  User.find({}).exec((err, users) => {
+    res.json(users);
+  });
+});
+
+// DELETE individual users.
 router.delete('/users/delete/:id', (req, res, next) => {
   const id = req.params.id;
   User.findOneAndDelete({ _id: id }, (err, user) => {
@@ -109,17 +107,25 @@ router.delete('/users/delete/:id', (req, res, next) => {
 
 // COURSE ROUTES
 
-// GET list of courses.
+// GET list of courses. Uses deep population to show only user names.
 router.get('/courses', (req, res, next) => {
-  Course.find({}).exec((err, courses) => {
-    if (err) return next(err);
-    res.json(courses);
-  });
+  Course.find({})
+    .populate('user', ['firstName', 'lastName'])
+    .exec((err, courses) => {
+      if (err) return next(err);
+      res.json(courses);
+    });
 });
 
-// GET the course for the provided user id.
+// GET course for the provided id. Uses deep population to show only user name.
 router.get('/courses/:courseID', (req, res, next) => {
-  res.json(req.course);
+  const id = req.params.courseID;
+  Course.findById(id)
+    .populate('user', ['firstName', 'lastName'])
+    .exec((err, course) => {
+      if (err) return next(err);
+      res.json(course);
+    });
 });
 
 // POST create a course, set Location header to the URI for the course, and return no content.
@@ -133,22 +139,34 @@ router.post('/courses', authenticateUser, (req, res, next) => {
   });
 });
 
-// PUT update a course and return no content.
+// PUT update a course and return no content. Checks if user is authorized to update course.
 router.put('/courses/:courseID', authenticateUser, (req, res, next) => {
-  req.course.update(req.body, (err, result) => {
-    if (err) return next(err);
-    res.json(result);
-  });
+  if (req.course.user.equals(req.currentUser._id)) {
+    req.course.update(req.body, (err, result) => {
+      if (err) return next(err);
+      res.json(result);
+    });
+  } else {
+    res
+      .status(403)
+      .json({ message: 'You do not have authorization to update this record' });
+  }
 });
 
-// DELETE course and return no content.
+// DELETE course and return no content. Checks if user is authorized to delete course.
 router.delete('/courses/:courseID', authenticateUser, (req, res, next) => {
-  req.course.remove(err => {
-    if (err) return next(err);
-    res.location('/courses');
-    res.status(204);
-    res.json(Course);
-  });
+  if (req.course.user.equals(req.currentUser._id)) {
+    req.course.remove(err => {
+      if (err) return next(err);
+      res.location('/courses');
+      res.status(204);
+      res.json(Course);
+    });
+  } else {
+    res
+      .status(403)
+      .json({ message: 'You do not have authorization to delete this record' });
+  }
 });
 
 module.exports = router;

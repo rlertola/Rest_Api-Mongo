@@ -1,25 +1,24 @@
 'use strict';
 
-// load modules
+// Load modules.
 const express = require('express');
 const app = express();
 
 const morgan = require('morgan');
 const jsonParser = require('body-parser').json;
 
-// variable to enable global error logging
+// Variable to enable global error logging.
 const enableGlobalErrorLogging =
   process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
 
 // Body parser.
 app.use(jsonParser());
 
-// Morgan(req logging);
+// Morgan(req logging).
 app.use(morgan('dev'));
 
-// TODO setup your api routes here
+// Routes setup.s
 const routes = require('./routes');
-
 const mongoose = require('mongoose');
 
 // Connect to mongodb server. The settings are to fix deprecation warnings.
@@ -40,21 +39,21 @@ db.once('open', () => {
 
 app.use('/api', routes);
 
-// setup a friendly greeting for the root route
+// Friendly greeting for the root route.
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to the REST API project!'
   });
 });
 
-// send 404 if no other route matched
+// Send 404 if no other route matched.
 app.use((req, res) => {
   res.status(404).json({
     message: 'Route Not Found'
   });
 });
 
-// setup a global error handler
+// Global error handler.
 app.use((err, req, res, next) => {
   if (enableGlobalErrorLogging) {
     console.error(`Global error handler: ${JSON.stringify(err.stack)}`);
@@ -66,10 +65,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// set our port
+// Set port.
 app.set('port', process.env.PORT || 5000);
 
-// start listening on our port
+// Start listening on port.
 const server = app.listen(app.get('port'), () => {
   console.log(`Express server is listening on port ${server.address().port}`);
 });
