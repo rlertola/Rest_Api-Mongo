@@ -67,6 +67,12 @@ _\*Middleware located under the UserSchema will check to make sure duplicate ema
 - PUT /api/courses/:id 204 - edit and update course.
 - DELETE /api/courses/:id 204 - delete single course.
 
+**Routes for Testing**
+_\*These routes weren't required for the project, but help with testing._
+
+- GET /api/usersAll - gets list of users.
+- DELETE /api/users/delete/:id - delete single user.
+
 #### Permissions and Password Hashing
 
 A current user must be logged in with correct credentials to access records. Only the registered user can update a course. Passwords are hashed using bcrypt. An authenticateUser middleware function is used in:

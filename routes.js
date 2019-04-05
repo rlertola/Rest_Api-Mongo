@@ -11,7 +11,7 @@ const auth = require('basic-auth');
 const Course = require('./models').Course;
 const User = require('./models').User;
 
-// Authenticate user.
+// Authenticate user. Middleware that verifies user and password.
 const authenticateUser = async (req, res, next) => {
   let message = null;
   const credentials = auth(req);
@@ -77,7 +77,10 @@ router.get('/users', authenticateUser, (req, res, next) => {
 // POST create user, sets Location header to '/' and returns no content.
 router.post('/users', (req, res, next) => {
   const user = new User(req.body);
-  user.password = bcryptjs.hashSync(user.password);
+  if (user.password) {
+    user.password = bcryptjs.hashSync(user.password);
+  }
+
   user.save((err, user) => {
     if (err) return next(err);
     res.location('/');
@@ -87,7 +90,7 @@ router.post('/users', (req, res, next) => {
 });
 
 // ------------------------------------------
-// *** THESE TWO ROUTES NOT REQUIRED BY PROJECT - FOR TESTING ONLY ***
+// *** THESE GET AND DELETE ROUTES NOT REQUIRED BY PROJECT - FOR TESTING ONLY ***
 // GET all users.
 router.get('/usersAll', (req, res) => {
   User.find({}).exec((err, users) => {
