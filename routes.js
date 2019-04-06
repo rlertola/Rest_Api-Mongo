@@ -82,10 +82,14 @@ router.post('/users', (req, res, next) => {
   }
 
   user.save((err, user) => {
-    if (err) return next(err);
+    if (err) {
+      if (err.name === 'ValidationError') {
+        err.status = 400;
+      }
+      return next(err);
+    }
     res.location('/');
-    res.status(201);
-    res.json(user);
+    res.sendStatus(201);
   });
 });
 
@@ -137,8 +141,7 @@ router.post('/courses', authenticateUser, (req, res, next) => {
   course.save((err, course) => {
     if (err) return next(err);
     res.location(`/courses/${course.id}`);
-    res.status(201);
-    res.json(course);
+    res.sendStatus(201);
   });
 });
 
@@ -147,7 +150,7 @@ router.put('/courses/:courseID', authenticateUser, (req, res, next) => {
   if (req.course.user.equals(req.currentUser._id)) {
     req.course.update(req.body, (err, result) => {
       if (err) return next(err);
-      res.json(result);
+      res.sendStatus(204);
     });
   } else {
     res
@@ -162,8 +165,7 @@ router.delete('/courses/:courseID', authenticateUser, (req, res, next) => {
     req.course.remove(err => {
       if (err) return next(err);
       res.location('/courses');
-      res.status(204);
-      res.json(Course);
+      res.sendStatus(204);
     });
   } else {
     res
