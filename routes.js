@@ -31,11 +31,11 @@ const authenticateUser = async (req, res, next) => {
         );
         req.currentUser = user;
       } else {
-        res.sendStatus(401);
+        res.status(401);
         message = `Authentication failure for username: ${user.emailAddress}`;
       }
     } else {
-      message = `User not found for username: ${user.emailAddress}`;
+      message = `User not found for username: ${credentials.name}`;
     }
   } else {
     message = `Auth header not found`;
@@ -139,7 +139,12 @@ router.get('/courses/:courseID', (req, res, next) => {
 router.post('/courses', authenticateUser, (req, res, next) => {
   const course = new Course(req.body);
   course.save((err, course) => {
-    if (err) return next(err);
+    if (err) {
+      if (err.name === 'ValidationError') {
+        err.status = 400;
+      }
+      return next(err);
+    }
     res.location(`/courses/${course.id}`);
     res.sendStatus(201);
   });
@@ -148,14 +153,19 @@ router.post('/courses', authenticateUser, (req, res, next) => {
 // PUT update a course and return no content. Checks if user is authorized to update course.
 router.put('/courses/:courseID', authenticateUser, (req, res, next) => {
   if (req.course.user.equals(req.currentUser._id)) {
-    req.course.update(req.body, (err, result) => {
-      if (err) return next(err);
+    req.course.updateOne(req.body, (err, result) => {
+      if (!req.body.title || !req.body.description) {
+        err = new Error('Both Title AND Description are required');
+        err.status = 400;
+        return next(err);
+      }
       res.sendStatus(204);
     });
   } else {
-    res
-      .status(403)
-      .json({ message: 'You do not have authorization to update this record' });
+    res.status(403);
+    res.json({
+      message: 'You do not have authorization to update this record'
+    });
   }
 });
 
@@ -168,9 +178,10 @@ router.delete('/courses/:courseID', authenticateUser, (req, res, next) => {
       res.sendStatus(204);
     });
   } else {
-    res
-      .status(403)
-      .json({ message: 'You do not have authorization to delete this record' });
+    res.status(403);
+    res.json({
+      message: 'You do not have authorization to delete this record'
+    });
   }
 });
 
